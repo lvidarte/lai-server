@@ -1,32 +1,36 @@
-import os.path
-import logging
+# -*- coding: utf-8 -*-
+
 import tornado.ioloop
 import tornado.web
 import tornado.options
-import base64
+from tornado.options import options
 
-from cryptor import decrypt
+from laidb.routes import routes
 
-PRIVATE_KEY = os.path.join(os.path.expanduser('~'), ".ssh/id_rsa")
+import pymongo
+import logging
 
 
-class MainHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.write("hola")
+class Application(tornado.web.Application):
+    def __init__(self):
+        self.conn = pymongo.Connection(options.db_host, options.db_port)
+        self.db = self.conn[options.db_name]
+        settings = {
+            'debug'        : options.debug,
+            'cookie_secret': '8577a601e2418c0d38afe28fdff932be09f6671ad3dec97ce62ae34a8c95a3c5',
+            'login_url'    : '/login',
+            'static_path'  : 'static',
+            'template_path': 'templates',
+            'gzip'         : True,
+        }
+        super(Application, self).__init__(routes, **settings)
 
-    def post(self):
-        data = self.get_argument('data')
-        data = base64.b64decode(data)
-        message = decrypt(data, PRIVATE_KEY)
-        message = message.decode('utf8')
-        print message
 
 if __name__ == '__main__':
-    application = tornado.web.Application([
-        (r'/', MainHandler),
-    ], debug=True)
-
+    tornado.options.parse_config_file('config.py')
     tornado.options.parse_command_line()
-    application.listen(8888)
-    logging.info('server started')
+    application = Application()
+    application.listen(options.port, options.addr)
+    logging.info('lai server started')
     tornado.ioloop.IOLoop.instance().start()
+
