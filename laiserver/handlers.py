@@ -22,7 +22,8 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie('username')
 
-class LoginHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
+
+class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
     @tornado.web.asynchronous
     def get(self):
         if self.get_argument('openid.mode', None):
@@ -34,21 +35,64 @@ class LoginHandler(tornado.web.RequestHandler, tornado.auth.GoogleMixin):
         if not user:
             raise tornado.web.HTTPError(500, "Google auth failed")
         self.set_secure_cookie('username', user['email'], expires_days=None)
+        self._save_if_not_exists(user)
         self.redirect('/')
+
+    def _save_if_not_exists(self, user):
+        spec = {'email': user['email']}
+        if self.db.users.find_one(spec) is None:
+            doc = {'email':    user['email'],
+                   'name':     user['name'],
+                   'pub_keys': {},
+                   'last_tid': 0}
+            self.db.users.insert(doc)
+
 
 class LogoutHandler(BaseHandler):
     def get(self):
         self.clear_cookie('username')
         self.redirect('/')
 
+
 class HomeHandler(BaseHandler):
-    @tornado.web.authenticated
     def get(self):
         args = {
             'title': 'Home',
             'username': self.current_user,
+            'home_active': 'active',
+            'user_active': '',
         }
         self.render('home.html', **args)
+
+
+class UserHandler(BaseHandler):
+    @tornado.web.authenticated
+    def get(self):
+        user = self._load(self.current_user)
+        args = {
+            'title': 'Home',
+            'username': self.current_user,
+            'user': user,
+            'user_active': 'active',
+            'home_active': '',
+        }
+        self.render('user.html', **args)
+
+    @tornado.web.authenticated
+    def post(self):
+        key_name = self.get_argument('key_name')
+        key_value = self.get_argument('key_value')
+        user = self._load(self.current_user)
+        spec = {'email': user['email']}
+        pub_keys = user['pub_keys']
+        pub_keys.update({key_name: key_value})
+        document = {'$set': {'pub_keys': pub_keys}}
+        self.db.users.update(spec, document)
+        self.redirect('/user')
+
+    def _load(self, username):
+        return self.db.users.find_one({'email': username})
+
 
 class OldHandler(BaseHandler):
     def __init__(self, *args, **kwargs):

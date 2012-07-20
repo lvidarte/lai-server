@@ -4,6 +4,8 @@ routes = [
     (r'/',       handlers.HomeHandler),
     (r'/login',  handlers.LoginHandler),
     (r'/logout', handlers.LogoutHandler),
+    
+    (r'/user',   handlers.UserHandler),
 
-    #(r'/(\w+)/(\d+)', handlers.OldHandler)
+    #(r'/sync',   handlers.SyncHandler),
 ]

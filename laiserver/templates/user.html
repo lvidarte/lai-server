@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ user['name'] }}</h1>
+
+<h3>Public keys</h3>
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Key</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for name, key in user['pub_keys'].items() %}
+        <tr>
+            <td>{{ name }}</td>
+            <td><pre>{{ key }}</pre></td>
+        </tr>
+    {% end %}
+    </tbody>
+</table>
+
+<h4>Add public key</h4>
+<form action="/user" method="post" name="" id="pub_key">
+    <label for="key_name">Name</label>
+    <input type="text" name="key_name" id="key_name" />
+    <label for="key_value">Key</label>
+    <textarea name="key_value" id="key_value" rows="8" cols="40"></textarea>
+    <br />
+    <input type="submit" value="Add" class="btn" />
+</form>
+{% end %}

@@ -1,18 +1,41 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN
-    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-
+<!DOCTYPE html>
+<html lang="en">
 <head>
     <title>{{ title }}</title>
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8" />
-    <link rel="shortcut icon" type="image/x-icon" href="/static/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="{{ static_url('favicon.ico') }}" />
+    <link href="{{ static_url('bootstrap/css/bootstrap.css') }}" rel="stylesheet">
+    <style type="text/css">
+        body { padding: 60px 20px 40px 20px }
+    </style>
     {% block head %}
     {% end %}
 </head>
 
 <body>
-{% block content %}
-{% end %}
+    <div class="navbar navbar-fixed-top">
+        <div class="navbar-inner">
+            <div class="container">
+                <ul class="nav">
+                    <li class="brand">Lai Server</li>
+                    <li class="{{ home_active }}"><a href="/" title="Home">Home</a></li>
+                    <li class="{{ user_active }}"><a href="/user" title="User">User</a></li>
+                </ul>
+                <ul class="nav pull-right">
+                    {% if username %}
+                    <li><a href="#" title="">{{ username }}</a></li>
+                    <li><a href="/logout" title="Logout">Logout</a></li>
+                    {% else %}
+                    <li><a href="/login" title="Login">Login</a></li>
+                    {% end %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+    {% block content %}
+    {% end %}
+    </div>
 </body>
 </html>
