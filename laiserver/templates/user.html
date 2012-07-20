@@ -3,7 +3,19 @@
 {% block content %}
 <h1>{{ user['name'] }}</h1>
 
+<table class="table table-bordered table-striped">
+    <tr>
+        <th>id</th>
+        <td>{{ user['_id'] }}</td>
+    </tr>
+    <tr>
+        <th>email</th>
+        <td>{{ user['email'] }}</td>
+    </tr>
+</table>
+
 <h3>Public keys</h3>
+{% if user['pub_keys'] %}
 <table class="table table-bordered table-striped">
     <thead>
         <tr>
@@ -20,14 +32,24 @@
     {% end %}
     </tbody>
 </table>
+{% else %}
+None
+{% end %}
 
-<h4>Add public key</h4>
+<hr />
+
+<h4>Add, edit or delete a public key</h4>
 <form action="/user" method="post" name="" id="pub_key">
     <label for="key_name">Name</label>
-    <input type="text" name="key_name" id="key_name" />
+    <input type="text" name="key_name" id="key_name" style="width:400px" />
     <label for="key_value">Key</label>
-    <textarea name="key_value" id="key_value" rows="8" cols="40"></textarea>
+    <textarea name="key_value" id="key_value" rows="4" style="width:400px"></textarea>
     <br />
-    <input type="submit" value="Add" class="btn" />
+    <input type="submit" value="Submit" class="btn" />
 </form>
+
+<div class="alert alert-info">
+    To edit a key insert the Name and fill the Key value with the new data.<br />
+    To delete a key just insert the Name and leave the Key value blank.
+</div>
 {% end %}

@@ -80,12 +80,15 @@ class UserHandler(BaseHandler):
 
     @tornado.web.authenticated
     def post(self):
-        key_name = self.get_argument('key_name')
-        key_value = self.get_argument('key_value')
+        key_name = self.get_argument('key_name').strip()
+        key_value = self.get_argument('key_value', '').strip()
         user = self._load(self.current_user)
         spec = {'email': user['email']}
         pub_keys = user['pub_keys']
-        pub_keys.update({key_name: key_value})
+        if key_value == '' and key_name in pub_keys.keys():
+            del pub_keys[key_name]
+        else:
+            pub_keys.update({key_name: key_value})
         document = {'$set': {'pub_keys': pub_keys}}
         self.db.users.update(spec, document)
         self.redirect('/user')
