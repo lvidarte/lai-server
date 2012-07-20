@@ -3,12 +3,16 @@ import os.path
 import urllib
 import urllib2
 import base64
+import json
 
-from cryptor import encrypt
+from laiserver.lib import crypto
 
 
-SERVER_URL = 'http://127.0.0.1:8888/'
-PUBLIC_KEY = os.path.join(os.path.expanduser('~'), ".ssh/id_rsa.pub")
+SERVER_URL = 'http://127.0.0.1:8888/sync'
+PUB_KEY_FILE = os.path.join(os.path.expanduser('~'), ".ssh/id_rsa.pub")
+PUB_KEY = open(PUB_KEY_FILE).read()
+PRV_KEY_FILE = os.path.join(os.path.expanduser('~'), ".ssh/id_rsa")
+PRV_KEY = open(PRV_KEY_FILE).read()
 
 
 def fetch(data=None):
@@ -22,12 +26,20 @@ def fetch(data=None):
     return res.read()
 
 if __name__ == '__main__':
-    message = open(sys.argv[1], 'r').read()
-    message = message.encode('utf8')
-    data = encrypt(message, PUBLIC_KEY)
-    data = base64.b64encode(data)
+    doc = {'username': 'lvidarte@gmail.com',
+           'key_name': 'howl',
+           'process' : 'update',
+           'docs'    : [1, 2, 3]}
+    msg  = json.dumps(doc)
+    enc  = crypto.encrypt(msg, PUB_KEY)
+    data = base64.b64encode(enc)
     try:
-        print fetch(data)
+        data = fetch(data)
     except:
-        print "Error"
+        print "Fetch error"
+    else:
+        enc  = base64.b64decode(data)
+        msg  = crypto.decrypt(enc, PRV_KEY)
+        doc  = json.loads(msg)
+        print doc['result']
 

@@ -12,3 +12,6 @@ class BaseHandler(tornado.web.RequestHandler):
     def get_current_user(self):
         return self.get_secure_cookie('username')
 
+    def get_user(self, username):
+        return self.db.users.find_one({'username': username})
+

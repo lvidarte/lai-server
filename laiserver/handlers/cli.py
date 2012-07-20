@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from tornado.options import options
+from tornado.web import HTTPError
 from laiserver.handlers import BaseHandler
+from laiserver.lib import crypto
 
+import base64
 import json
 
 try:
@@ -12,8 +14,65 @@ except ImportError:
 
 
 class SyncHandler(BaseHandler):
-    def get(self):
-        self.write("hello world")
+
+    def post(self):
+        data = self.get_argument('data')
+        doc  = self._get_doc(data)
+        data = self._process(doc)
+        self.write(data)
+
+    def _get_doc(self, data):
+        enc = base64.b64decode(data)
+        msg = crypto.decrypt(enc, self.application.prv_key)
+        doc = json.loads(msg)
+        return doc
+
+    def _get_data(self, doc):
+        pub_key = self._get_pub_key(doc)
+        msg  = json.dumps(doc)
+        enc  = crypto.encrypt(msg, pub_key)
+        data = base64.b64encode(enc)
+        return data
+
+    def _process(self, doc):
+        self.user = self.get_user(doc['username'])
+        if self.user is None:
+            args = (doc['username'],)
+            msg  = 'Username %s does not exist' % args
+            raise HTTPError(500, msg)
+        if not self._get_pub_key(doc):
+            args = (doc['key_name'], doc['username'])
+            msg  = 'Invalid key_name %s for username %s' % args
+            raise HTTPError(500, msg)
+        return self._delegate(doc)
+
+    def _get_pub_key(self, doc):
+        name = doc['key_name']
+        pub_keys = self.user['pub_keys']
+        if name in pub_keys:
+            return pub_keys[name]
+
+    def _delegate(self, doc):
+        PROC = {
+            'update': self._update,
+            'commit': self._commit
+        }
+        if doc['process'] not in PROC:
+            args = (doc['process'], doc['username'])
+            msg  = 'Invalid process %s by username %s' % args
+            raise HTTPError(500, msg)
+        return PROC[doc['process']](doc)
+
+    def _update(self, doc):
+        doc['result'] = 'updated ok'
+        data = self._get_data(doc)
+        return data
+
+    def _commit(self, doc):
+        doc['result'] = 'commited ok'
+        data = self._get_data(doc)
+        return data
+
 
 class OldHandler(BaseHandler):
     def __init__(self, *args, **kwargs):

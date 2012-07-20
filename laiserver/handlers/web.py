@@ -20,10 +20,9 @@ class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
         self.redirect('/user')
 
     def _save_if_not_exists(self, user):
-        spec = {'email': user['email']}
-        if self.db.users.find_one(spec) is None:
-            doc = {'email':    user['email'],
-                   'name':     user['name'],
+        if self.get_user(user['email']) is None:
+            doc = {'username': user['email'],
+                   'name'    : user['name'],
                    'pub_keys': {},
                    'last_tid': 0}
             self.db.users.insert(doc)
@@ -49,7 +48,7 @@ class HomeHandler(BaseHandler):
 class UserHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
-        user = self._load(self.current_user)
+        user = self.get_user(self.current_user)
         args = {
             'title': 'Home',
             'username': self.current_user,
@@ -63,20 +62,14 @@ class UserHandler(BaseHandler):
     def post(self):
         key_name = self.get_argument('key_name').strip()
         key_value = self.get_argument('key_value', '').strip()
-        user = self._load(self.current_user)
-        spec = {'email': user['email']}
+        user = self.get_user(self.current_user)
+        spec = {'username': user['username']}
         pub_keys = user['pub_keys']
-        if key_value == '' and key_name in pub_keys.keys():
+        if key_value == '' and key_name in pub_keys:
             del pub_keys[key_name]
         else:
             pub_keys.update({key_name: key_value})
         document = {'$set': {'pub_keys': pub_keys}}
         self.db.users.update(spec, document)
         self.redirect('/user')
-
-    def _load(self, username):
-        return self.db.users.find_one({'email': username})
-
-
-    pass
 
