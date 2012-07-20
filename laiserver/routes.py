@@ -1,4 +1,4 @@
-from laidb import handlers
+from laiserver import handlers
 
 routes = [
     (r'/',       handlers.HomeHandler),

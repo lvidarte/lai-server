@@ -5,7 +5,7 @@ import tornado.web
 import tornado.options
 from tornado.options import options
 
-from laidb.routes import routes
+from laiserver.routes import routes
 
 import pymongo
 import logging
