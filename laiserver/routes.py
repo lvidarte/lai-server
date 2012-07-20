@@ -1,11 +1,11 @@
-from laiserver import handlers
+from laiserver.handlers import web, cli
 
 routes = [
-    (r'/',       handlers.HomeHandler),
-    (r'/login',  handlers.LoginHandler),
-    (r'/logout', handlers.LogoutHandler),
+    (r'/',       web.HomeHandler),
+    (r'/login',  web.LoginHandler),
+    (r'/logout', web.LogoutHandler),
     
-    (r'/user',   handlers.UserHandler),
+    (r'/user',   web.UserHandler),
 
-    #(r'/sync',   handlers.SyncHandler),
+    (r'/sync',   cli.SyncHandler),
 ]
