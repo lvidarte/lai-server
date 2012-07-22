@@ -1,0 +1,6 @@
+#!/bin/bash
+source env/bin/activate
+cd laiserver
+python server.py --addr=0.0.0.0
+cd -
+deactivate
