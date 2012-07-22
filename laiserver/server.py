@@ -2,9 +2,8 @@
 
 import tornado.ioloop
 import tornado.web
-import tornado.options
-from tornado.options import options
 
+from laiserver import options
 from laiserver.routes import routes
 
 import pymongo
@@ -28,8 +27,6 @@ class Application(tornado.web.Application):
 
 
 if __name__ == '__main__':
-    tornado.options.parse_config_file('config.py')
-    tornado.options.parse_command_line()
     application = Application()
     application.listen(options.port, options.addr)
     logging.info('lai server started')

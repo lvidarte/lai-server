@@ -1,45 +1,47 @@
 from pymongo import Connection
 from datetime import datetime, timedelta
 from time import sleep
+from laiserver import options
+
+try:
+    from bson.objectid import ObjectId
+except ImportError:
+    from pymongo.objectid import ObjectId
 
 TTL = 10
 
 connection = Connection()
-db = connection.test
-collection = db.expire
+db = connection[options.db_name]
 
 
-def set_session(user, session_id):
-    expire = datetime.now() + timedelta(seconds=TTL)
-    spec = {'user': user, 'session_id': session_id}
-    document = {'user': user, 'session_id': session_id, 'expire': expire}
-    rs = collection.update(spec, document, upsert=True, safe=True)
-    return rs
+def create(doc):
+    spec = {'username': doc['username'],
+            'process' : doc['process'],
+            'expire'  : get_expire_time()}
+    _id = db.sessions.insert(spec)
+    return str(_id)
 
-def get_session(user, session_id):
-    clean_session()
-    spec = {'user': user, 'session_id': session_id}
-    fields = {'_id': 0}
-    row = collection.find_one(spec, fields)
-    return row
+def get_expire_time():
+    expire_time = datetime.now() + timedelta(seconds=TTL)
+    return expire_time
 
-def clean_session():
-    rs = collection.remove({'expire': {'$lt': datetime.now()}}, safe=True)
+def update(doc):
+    remove_expired()
+    spec = {'_id'     : ObjectId(doc['session_id']),
+            'username': doc['username']}
+    document = {'process': doc['process'],
+                'expire' : get_expire_time()}
+    rs = db.sessions.update(spec, {'$set': document}, safe=True)
+    return rs['n'] == 1
+
+def remove_expired():
+    spec = {'expire': {'$lt': datetime.now()}}
+    rs = db.sessions.remove(spec, safe=True)
     return rs
 
 if __name__ == '__main__':
-    import string, random
-    def get_session_id(length):
-        chars = string.ascii_letters + string.digits + string.punctuation
-        return ''.join([random.choice(chars) for x in range(length)])
-    user = 'lvidarte'
-    session_id = get_session_id(32)
-    print "Setting object into session for %d seconds.." % TTL
-    set_session(user, session_id)
-    print "Getting object.."
-    print get_session(user, session_id)
-    secs = TTL + 1
-    print "Sleeping %d seconds.." % secs
-    sleep(secs)
-    print "Getting object.."
-    print get_session(user, session_id)
+    doc = {'username': 'lvidarte@gmail.com',
+           'process' : 'update'}
+    doc['session_id'] = create(doc)
+    sleep(TTL)
+    print update(doc)

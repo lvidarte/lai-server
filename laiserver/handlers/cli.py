@@ -3,6 +3,7 @@
 from tornado.web import HTTPError
 from laiserver.handlers import BaseHandler
 from laiserver.lib import crypto
+from laiserver.lib import session
 
 import base64
 import json
@@ -64,14 +65,19 @@ class SyncHandler(BaseHandler):
         return PROC[doc['process']](doc)
 
     def _update(self, doc):
+        doc['session_id'] = session.create(doc)
         doc['result'] = 'updated ok'
         data = self._get_data(doc)
         return data
 
     def _commit(self, doc):
-        doc['result'] = 'commited ok'
-        data = self._get_data(doc)
-        return data
+        if session.update(doc):
+            doc['result'] = 'commited ok'
+            data = self._get_data(doc)
+            return data
+        else:
+            msg = "Session expired"
+            raise HTTPError(500, msg)
 
 
 class OldHandler(BaseHandler):

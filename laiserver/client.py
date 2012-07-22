@@ -1,4 +1,3 @@
-import sys
 import os.path
 import urllib
 import urllib2
@@ -41,5 +40,25 @@ if __name__ == '__main__':
         enc  = base64.b64decode(data)
         msg  = crypto.decrypt(enc, PRV_KEY)
         doc  = json.loads(msg)
+        print doc['session_id']
+        print doc['result']
+
+    import time
+    time.sleep(9)
+
+    # Commit
+    doc['process'] = 'commit'
+    msg  = json.dumps(doc)
+    enc  = crypto.encrypt(msg, PUB_KEY)
+    data = base64.b64encode(enc)
+    try:
+        data = fetch(data)
+    except:
+        print "Fetch error"
+    else:
+        enc  = base64.b64decode(data)
+        msg  = crypto.decrypt(enc, PRV_KEY)
+        doc  = json.loads(msg)
+        print doc['session_id']
         print doc['result']
 
