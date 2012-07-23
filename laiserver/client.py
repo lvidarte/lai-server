@@ -28,7 +28,8 @@ if __name__ == '__main__':
     doc = {'username': 'lvidarte@gmail.com',
            'key_name': 'howl',
            'process' : 'update',
-           'docs'    : [1, 2, 3]}
+           'tid'     : 0,
+           'docs'    : []}
     msg  = json.dumps(doc)
     enc  = crypto.encrypt(msg, PUB_KEY)
     data = base64.b64encode(enc)
@@ -41,7 +42,6 @@ if __name__ == '__main__':
         msg  = crypto.decrypt(enc, PRV_KEY)
         doc  = json.loads(msg)
         print doc['session_id']
-        print doc['result']
 
     import time
     time.sleep(9)
@@ -60,5 +60,4 @@ if __name__ == '__main__':
         msg  = crypto.decrypt(enc, PRV_KEY)
         doc  = json.loads(msg)
         print doc['session_id']
-        print doc['result']
 

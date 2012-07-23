@@ -2,6 +2,7 @@ from tornado.web import HTTPError
 from laiserver.handlers import BaseHandler
 from laiserver.lib import crypto
 from laiserver.lib import session
+from laiserver.lib import ObjectId
 
 import base64
 import json
@@ -29,14 +30,17 @@ class SyncHandler(BaseHandler):
         return data
 
     def _process(self, doc):
+        msg = None
         self.user = self.get_user(doc['username'])
         if self.user is None:
             args = (doc['username'],)
             msg  = 'Username %s does not exist' % args
-            raise HTTPError(500, msg)
         if not self._get_pub_key(doc):
             args = (doc['key_name'], doc['username'])
             msg  = 'Invalid key_name %s for username %s' % args
+        if 'tid' not in doc:
+            msg  = 'No tid in doc request'
+        if msg:
             raise HTTPError(500, msg)
         return self._delegate(doc)
 
@@ -59,85 +63,57 @@ class SyncHandler(BaseHandler):
 
     def _update(self, doc):
         doc['session_id'] = session.create(doc)
-        doc['result'] = 'updated ok'
+        doc['docs'] = self._get_update_docs(doc)
         data = self._get_data(doc)
         return data
 
     def _commit(self, doc):
-        if session.update(doc):
-            doc['result'] = 'commited ok'
-            data = self._get_data(doc)
-            return data
+        if len(self._get_update_docs(doc)) == 0:
+            if session.update(doc):
+                tid = self._get_next_tid(doc)
+                docs = []
+                for doc_ in doc['docs']:
+                    doc__ = self._process_commit(doc_, tid)
+                    docs.append(doc__)
+                doc['docs'] = docs[:]
+            else:
+                del doc['docs']
+                doc['error'] = 'Session expired'
         else:
-            msg = "Session expired"
-            raise HTTPError(500, msg)
+            del doc['docs']
+            doc['error'] = 'You must update first'
+        data = self._get_data(doc)
+        return data
 
-
-class OldHandler(BaseHandler):
-    def __init__(self, *args, **kwargs):
-        super(OldHandler, self).__init__(*args, **kwargs)
-        self.coll = self.application.db[options.db_collection]
-        self.set_header('Content-Type', 'application/json')
-
-    def get(self, user, tid):
-        tid = int(tid)
-        docs = self._get_update_docs(user, tid)
-        self.write(json.dumps({'docs': docs}))
-
-    def _get_update_docs(self, user, tid):
-        docs = []
-        cur = self.coll.find({'tid': {'$gt': tid},
-                              '$or': [{'users':    {'$in': [user]}},
-                                      {'usersdel': {'$in': [user]}}]
-                             })
-
-        for doc in cur:
-            _doc = {'sid'     : str(doc['_id']),
-                    'tid'     : doc['tid'],
-                    'data'    : doc['data'],
-                    'keys'    : doc['keys'],
-                    'users'   : doc['users'],
-                    'usersdel': doc['usersdel']}
-            docs.append(_doc)
-        return docs
-
-    def post(self, user, tid):
-        tid = int(tid)
-        docs = json.loads(self.get_argument('docs'))
-        if len(self._get_update_docs(user, tid)) == 0:
-            tid = self._get_next_tid()
-            _docs = []
-            for doc in docs:
-                _doc = self._process(doc, tid)
-                _docs.append(_doc)
-            self.write(json.dumps({'docs': _docs}))
-        else:
-            self.write(json.dumps({'error': 'you must update first'}))
-
-    def _get_next_tid(self):
-        query = {'_id': options.db_collection}
+    def _get_next_tid(self, doc):
+        query = {'username': doc['username']}
         update = {'$inc': {'last_tid': 1}}
-        collection = self.application.db['counter']
-        row = collection.find_and_modify(query, update, upsert=True, new=True)
+        row = self.db.users.find_and_modify(query, update, upsert=True, new=True)
         return row['last_tid']
 
-    def _process(self, doc, tid):
+    def _get_update_docs(self, doc):
+        docs = []
+        query = {'username': doc['username'],
+                 'tid'     : {'$gt': doc['tid']}}
+        cur = self.db.docs.find(query)
+        for row in cur:
+            row['sid'] = str(row['_id'])
+            del row['_id']
+            docs.append(row)
+        return docs
+
+    def _process_commit(self, doc, tid, username):
         _doc = {'tid'     : tid,
                 'data'    : doc['data'],
-                'keys'    : doc['keys'],
-                'users'   : doc['users'],
-                'usersdel': doc['usersdel']}
-
+                'public'  : doc['public']}
         if doc['sid'] is not None:
             _id  = ObjectId(doc['sid'])
             self.coll.update({'_id': _id}, {'$set': _doc})
         else:
+            _doc['username'] = username
             _id  = self.coll.insert(_doc)
-
-        _doc = {'id'      : doc['id'],
-                'sid'     : str(_id),
-                'tid'     : tid,
-                'users'   : doc['users'],
-                'usersdel': doc['usersdel']}
-        return _doc
+        __doc = {'id'  : doc['id'],
+                 'sid' : str(_id),
+                 'tid' : tid}
+        return __doc
 
