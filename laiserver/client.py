@@ -25,7 +25,7 @@ def fetch(data=None):
     return res.read()
 
 if __name__ == '__main__':
-    doc = {'username': 'lvidarte@gmail.com',
+    doc = {'user'    : 'lvidarte@gmail.com',
            'key_name': 'howl',
            'process' : 'update',
            'tid'     : 0,
