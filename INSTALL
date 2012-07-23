@@ -1,3 +1,31 @@
-virtualenv --python=python2.7 env
-source env/bin/activate
-pip install tornado pycrypto pymongo
+lai-server install
+==================
+
+First you need to create a virtualenv, preferably under server-lai dir,
+and install the packages tornado, pycrypto and pymongo:
+
+    cd server-lai
+    virtualenv --python=python2.7 env
+    source env/bin/activate
+    pip install tornado pycrypto pymongo
+
+Then you need to export the vars:
+
+    export LAI_MODULE_PATH=/home/user/server-lai
+    export LAI_ENV_PATH=/home/user/server-lai/env
+
+Finally just run the script server under server-lai dir:
+
+    ./server
+
+If you have a ~/bin dir under your PATH, you can make a symbolic link:
+
+    ln -s server ~/bin/lai-server
+
+For overwrite the default options save a file server-lai under /etc/default:
+
+     # sever-lai
+     addr = '127.0.0.1'
+     port = 9000
+     db_name = 'lai_server'
+
