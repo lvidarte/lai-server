@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import tornado.auth
 from laiserver.handlers import BaseHandler
 

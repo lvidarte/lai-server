@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 from tornado.web import HTTPError
 from laiserver.handlers import BaseHandler
 from laiserver.lib import crypto
@@ -7,11 +5,6 @@ from laiserver.lib import session
 
 import base64
 import json
-
-try:
-    from bson.objectid import ObjectId
-except ImportError:
-    from pymongo.objectid import ObjectId
 
 
 class SyncHandler(BaseHandler):

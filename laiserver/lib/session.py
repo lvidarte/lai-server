@@ -1,17 +1,9 @@
-from pymongo import Connection
 from datetime import datetime, timedelta
 from time import sleep
-from laiserver import options
+from laiserver.lib import db, ObjectId
 
-try:
-    from bson.objectid import ObjectId
-except ImportError:
-    from pymongo.objectid import ObjectId
 
 TTL = 10
-
-connection = Connection()
-db = connection[options.db_name]
 
 
 def create(doc):
@@ -38,6 +30,7 @@ def remove_expired():
     spec = {'expire': {'$lt': datetime.now()}}
     rs = db.sessions.remove(spec, safe=True)
     return rs
+
 
 if __name__ == '__main__':
     doc = {'username': 'lvidarte@gmail.com',

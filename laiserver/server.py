@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 import tornado.ioloop
 import tornado.web
 
@@ -7,14 +5,11 @@ from laiserver import options
 from laiserver.routes import routes
 
 import os.path
-import pymongo
 import logging
 
 
 class Application(tornado.web.Application):
     def __init__(self):
-        self.conn = pymongo.Connection(options.db_host, options.db_port)
-        self.db = self.conn[options.db_name]
         self.prv_key = open(options.prv_key, 'r').read()
         settings = {
             'debug'        : options.debug,
