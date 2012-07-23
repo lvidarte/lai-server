@@ -6,6 +6,7 @@ import tornado.web
 from laiserver import options
 from laiserver.routes import routes
 
+import os.path
 import pymongo
 import logging
 
@@ -19,8 +20,8 @@ class Application(tornado.web.Application):
             'debug'        : options.debug,
             'cookie_secret': '8577a601e2418c0d38afe28fdff932be09f6671ad3',
             'login_url'    : '/login',
-            'static_path'  : 'static',
-            'template_path': 'templates',
+            'static_path'  : os.path.join(options.base_dir, 'static'),
+            'template_path': os.path.join(options.base_dir, 'templates'),
             'gzip'         : True,
         }
         super(Application, self).__init__(routes, **settings)

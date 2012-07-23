@@ -3,7 +3,7 @@ import tornado.options
 from tornado.options import options
 from tornado.options import define
 
-BASE_DIR = os.path.realpath(os.path.dirname(__file__))
+define("base_dir", os.path.realpath(os.path.dirname(__file__)))
 
 define("debug", True)
 define("addr", '127.0.0.1')
@@ -17,7 +17,7 @@ define("db_collection", "server")
 define("prv_key", os.path.join(os.path.expanduser('~'), ".ssh/id_rsa"))
 
 try:
-    options_file = os.path.join(BASE_DIR, 'options.py')
+    options_file = os.path.join(options.base_dir, 'options.py')
     tornado.options.parse_config_file(options_file)
 except:
     pass
