@@ -17,7 +17,7 @@ define("db_collection", "server")
 define("prv_key", os.path.join(os.path.expanduser('~'), ".ssh/id_rsa"))
 
 try:
-    options_file = os.path.join(options.base_dir, 'options.py')
+    options_file = os.path.join(options.base_dir, '/etc/default/lai-server')
     tornado.options.parse_config_file(options_file)
 except:
     pass
