@@ -13,13 +13,13 @@ class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
     def _on_auth(self, user):
         if not user:
             raise tornado.web.HTTPError(500, "Google auth failed")
-        self.set_secure_cookie('username', user['email'], expires_days=None)
+        self.set_secure_cookie('user', user['email'], expires_days=None)
         self._save_if_not_exists(user)
         self.redirect('/user')
 
     def _save_if_not_exists(self, user):
         if self.get_user(user['email']) is None:
-            doc = {'username': user['email'],
+            doc = {'user'    : user['email'],
                    'name'    : user['name'],
                    'pub_keys': {},
                    'last_tid': 0}
@@ -28,15 +28,16 @@ class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
 
 class LogoutHandler(BaseHandler):
     def get(self):
-        self.clear_cookie('username')
+        self.clear_cookie('user')
         self.redirect('/')
 
 
 class HomeHandler(BaseHandler):
     def get(self):
+        user = self.get_user(self.current_user)
         args = {
-            'title': 'Home',
-            'username': self.current_user,
+            'title'      : 'Home',
+            'user'       : user,
             'home_active': 'active',
             'user_active': '',
         }
@@ -48,9 +49,8 @@ class UserHandler(BaseHandler):
     def get(self):
         user = self.get_user(self.current_user)
         args = {
-            'title': 'Home',
-            'username': self.current_user,
-            'user': user,
+            'title'      : 'User',
+            'user'       : user,
             'user_active': 'active',
             'home_active': '',
         }
@@ -61,7 +61,7 @@ class UserHandler(BaseHandler):
         key_name = self.get_argument('key_name').strip()
         key_value = self.get_argument('key_value', '').strip()
         user = self.get_user(self.current_user)
-        spec = {'username': user['username']}
+        spec = {'user': user['user']}
         pub_keys = user['pub_keys']
         if key_value == '' and key_name in pub_keys:
             del pub_keys[key_name]

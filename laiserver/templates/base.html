@@ -22,8 +22,8 @@
                     <li class="{{ user_active }}"><a href="/user" title="User">User</a></li>
                 </ul>
                 <ul class="nav pull-right">
-                    {% if username %}
-                    <li><a href="#" title="">{{ username }}</a></li>
+                    {% if user %}
+                    <li><a href="#" title="">{{ user['user'] }}</a></li>
                     <li><a href="/logout" title="Logout">Logout</a></li>
                     {% else %}
                     <li><a href="/login" title="Login">Login</a></li>

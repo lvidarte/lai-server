@@ -11,8 +11,8 @@ class BaseHandler(tornado.web.RequestHandler):
         #self.set_header('Content-Type', 'application/json')
 
     def get_current_user(self):
-        return self.get_secure_cookie('username')
+        return self.get_secure_cookie('user')
 
-    def get_user(self, username):
-        return self.db.users.find_one({'username': username})
+    def get_user(self, user):
+        return self.db.users.find_one({'user': user})
 

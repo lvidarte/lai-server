@@ -31,13 +31,12 @@ class SyncHandler(BaseHandler):
 
     def _process(self, doc):
         msg = None
-        self.user = self.get_user(doc['username'])
+        self.user = self.get_user(doc['user'])
         if self.user is None:
-            args = (doc['username'],)
-            msg  = 'Username %s does not exist' % args
+            msg = 'User %s does not exist' % doc['user']
         if not self._get_pub_key(doc):
-            args = (doc['key_name'], doc['username'])
-            msg  = 'Invalid key_name %s for username %s' % args
+            args = (doc['key_name'], doc['user'])
+            msg  = 'Invalid key_name %s for user %s' % args
         if 'tid' not in doc:
             msg  = 'No tid in doc request'
         if msg:
@@ -56,8 +55,8 @@ class SyncHandler(BaseHandler):
             'commit': self._commit
         }
         if doc['process'] not in PROC:
-            args = (doc['process'], doc['username'])
-            msg  = 'Invalid process %s by username %s' % args
+            args = (doc['process'], doc['user'])
+            msg  = 'Invalid process %s by user %s' % args
             raise HTTPError(500, msg)
         return PROC[doc['process']](doc)
 
@@ -86,15 +85,15 @@ class SyncHandler(BaseHandler):
         return data
 
     def _get_next_tid(self, doc):
-        query = {'username': doc['username']}
+        query  = {'user': doc['user']}
         update = {'$inc': {'last_tid': 1}}
         row = self.db.users.find_and_modify(query, update, upsert=True, new=True)
         return row['last_tid']
 
     def _get_update_docs(self, doc):
-        docs = []
-        query = {'username': doc['username'],
-                 'tid'     : {'$gt': doc['tid']}}
+        docs  = []
+        query = {'user': doc['user'],
+                 'tid' : {'$gt': doc['tid']}}
         cur = self.db.docs.find(query)
         for row in cur:
             row['sid'] = str(row['_id'])
@@ -102,15 +101,15 @@ class SyncHandler(BaseHandler):
             docs.append(row)
         return docs
 
-    def _process_commit(self, doc, tid, username):
-        _doc = {'tid'     : tid,
-                'data'    : doc['data'],
-                'public'  : doc['public']}
+    def _process_commit(self, doc, tid, user):
+        _doc = {'tid'   : tid,
+                'data'  : doc['data'],
+                'public': doc['public']}
         if doc['sid'] is not None:
             _id  = ObjectId(doc['sid'])
             self.coll.update({'_id': _id}, {'$set': _doc})
         else:
-            _doc['username'] = username
+            _doc['user'] = user
             _id  = self.coll.insert(_doc)
         __doc = {'id'  : doc['id'],
                  'sid' : str(_id),
