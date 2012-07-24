@@ -30,18 +30,20 @@ class SyncHandler(BaseHandler):
         return data
 
     def _process(self, doc):
-        msg = None
+        error = self._validate(doc)
+        if error:
+            raise HTTPError(500, error)
+        return self._delegate(doc)
+
+    def _validate(self, doc):
         self.user = self.get_user(doc['user'])
         if self.user is None:
-            msg = 'User %s does not exist' % doc['user']
+            return 'User %s does not exist' % doc['user']
         if not self._get_pub_key(doc):
-            args = (doc['key_name'], doc['user'])
-            msg  = 'Invalid key_name %s for user %s' % args
+            args  = (doc['key_name'], doc['user'])
+            return 'Invalid key_name %s for user %s' % args
         if 'tid' not in doc:
-            msg  = 'No tid in doc request'
-        if msg:
-            raise HTTPError(500, msg)
-        return self._delegate(doc)
+            return 'No tid in doc request'
 
     def _get_pub_key(self, doc):
         name = doc['key_name']
@@ -55,9 +57,9 @@ class SyncHandler(BaseHandler):
             'commit': self._commit
         }
         if doc['process'] not in PROC:
-            args = (doc['process'], doc['user'])
-            msg  = 'Invalid process %s by user %s' % args
-            raise HTTPError(500, msg)
+            args  = (doc['process'], doc['user'])
+            error = 'Invalid process %s by user %s' % args
+            raise HTTPError(500, error)
         return PROC[doc['process']](doc)
 
     def _update(self, doc):
@@ -70,11 +72,11 @@ class SyncHandler(BaseHandler):
         if len(self._get_update_docs(doc)) == 0:
             if session.update(doc):
                 tid = self._get_next_tid(doc)
-                docs = []
-                for doc_ in doc['docs']:
-                    doc__ = self._process_commit(doc_, tid)
-                    docs.append(doc__)
-                doc['docs'] = docs[:]
+                subdocs = []
+                for subdoc in doc['docs']:
+                    sdoc = self._do_commit(subdoc, tid, doc['user'])
+                    subdocs.append(sdoc)
+                doc['docs'] = subdocs[:]
             else:
                 del doc['docs']
                 doc['error'] = 'Session expired'
@@ -101,18 +103,15 @@ class SyncHandler(BaseHandler):
             docs.append(row)
         return docs
 
-    def _process_commit(self, doc, tid, user):
-        _doc = {'tid'   : tid,
-                'data'  : doc['data'],
-                'public': doc['public']}
-        if doc['sid'] is not None:
-            _id  = ObjectId(doc['sid'])
-            self.coll.update({'_id': _id}, {'$set': _doc})
+    def _do_commit(self, subdoc, tid, user):
+        sdoc = {'tid'   : tid,
+                'data'  : subdoc['data'],
+                'public': subdoc['public']}
+        if subdoc['sid']:
+            _id  = ObjectId(subdoc['sid'])
+            self.db.docs.update({'_id': _id}, {'$set': sdoc})
         else:
-            _doc['user'] = user
-            _id  = self.coll.insert(_doc)
-        __doc = {'id'  : doc['id'],
-                 'sid' : str(_id),
-                 'tid' : tid}
-        return __doc
+            sdoc['user'] = user
+            _id  = self.db.docs.insert(sdoc, safe=True)
+        return {'id' : subdoc['id'], 'sid': str(_id), 'tid': tid}
 
