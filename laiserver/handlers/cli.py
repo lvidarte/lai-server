@@ -42,8 +42,8 @@ class SyncHandler(BaseHandler):
         if not self._get_pub_key(doc):
             args  = (doc['key_name'], doc['user'])
             return 'Invalid key_name %s for user %s' % args
-        if 'tid' not in doc:
-            return 'No tid in doc request'
+        if 'last_tid' not in doc:
+            return 'No last_tid in doc request'
 
     def _get_pub_key(self, doc):
         name = doc['key_name']
@@ -95,7 +95,7 @@ class SyncHandler(BaseHandler):
     def _get_update_docs(self, doc):
         docs  = []
         query = {'user': doc['user'],
-                 'tid' : {'$gt': doc['tid']}}
+                 'tid' : {'$gt': doc['last_tid']}}
         cur = self.db.docs.find(query)
         for row in cur:
             row['sid'] = str(row['_id'])

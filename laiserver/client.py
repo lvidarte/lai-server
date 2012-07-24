@@ -25,11 +25,12 @@ def fetch(data=None):
     return res.read()
 
 if __name__ == '__main__':
-    doc = {'user'    : 'lvidarte@gmail.com',
-           'key_name': 'howl',
-           'process' : 'update',
-           'tid'     : 0,
-           'docs'    : []}
+    doc = {'user'      : 'lvidarte@gmail.com',
+           'key_name'  : 'howl',
+           'session_id': None,
+           'process'   : 'update',
+           'last_tid'  : 0,
+           'docs'      : []}
     msg  = json.dumps(doc)
     enc  = crypto.encrypt(msg, PUB_KEY)
     data = base64.b64encode(enc)
