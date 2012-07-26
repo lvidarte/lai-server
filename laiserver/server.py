@@ -24,7 +24,8 @@ class Application(tornado.web.Application):
 
 if __name__ == '__main__':
     application = Application()
-    application.listen(options.port, options.addr)
-    logging.info('lai server started')
+    args = (options.port, options.addr)
+    application.listen(*args)
+    logging.info('lai server started at %s:%s' % args[::-1])
     tornado.ioloop.IOLoop.instance().start()
 
