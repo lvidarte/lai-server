@@ -96,7 +96,8 @@ class SyncHandler(BaseHandler):
         docs  = []
         query = {'user': doc['user'],
                  'tid' : {'$gt': doc['last_tid']}}
-        cur = self.db.docs.find(query)
+        fields = {'user': 0}
+        cur = self.db.docs.find(query, fields)
         for row in cur:
             row['sid'] = str(row['_id'])
             del row['_id']
