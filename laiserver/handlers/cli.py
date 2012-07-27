@@ -24,7 +24,9 @@ import base64
 import json
 
 
-class SyncHandler(BaseHandler):
+class CliHandler(BaseHandler):
+
+    PROC = {}
 
     def post(self):
         data = self.get_argument('data')
@@ -68,15 +70,21 @@ class SyncHandler(BaseHandler):
             return pub_keys[name]
 
     def _delegate(self, doc):
-        PROC = {
-            'update': self._update,
-            'commit': self._commit
-        }
-        if doc['process'] not in PROC:
+        if doc['process'] not in self.PROC:
             args  = (doc['process'], doc['user'])
             error = 'Invalid process %s by user %s' % args
             raise HTTPError(500, error)
-        return PROC[doc['process']](doc)
+        return self.PROC[doc['process']](doc)
+
+
+class SyncHandler(CliHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.PROC = {
+            'update': self._update,
+            'commit': self._commit,
+        }
+        super(SyncHandler, self).__init__(*args, **kwargs)
 
     def _update(self, doc):
         doc['session_id'] = session.create(doc)
@@ -112,8 +120,7 @@ class SyncHandler(BaseHandler):
         docs  = []
         query = {'user': doc['user'],
                  'tid' : {'$gt': doc['last_tid']}}
-        fields = {'user': 0}
-        cur = self.db.docs.find(query, fields)
+        cur = self.db.docs.find(query)
         for row in cur:
             row['sid'] = str(row['_id'])
             del row['_id']
@@ -132,3 +139,43 @@ class SyncHandler(BaseHandler):
             _id  = self.db.docs.insert(sdoc, safe=True)
         return {'id' : subdoc['id'], 'sid': str(_id), 'tid': tid}
 
+
+class SearchHandler(CliHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.PROC = {
+            'search': self._search,
+        }
+        super(SearchHandler, self).__init__(*args, **kwargs)
+
+    def _search(self, doc):
+        spec = {'public'   : True,
+                'user'     : {'$ne': doc['user']},
+                'data.body': {'$regex': doc['value'], '$options': 'im'}}
+        cur = self.db.docs.find(spec)
+        docs = []
+        for row in cur:
+            row['sid'] = str(row['_id'])
+            del row['_id']
+            docs.append(row)
+        doc['docs'] = docs
+        data = self._get_data(doc)
+        return data
+
+
+class GetHandler(CliHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.PROC = {
+            'get': self._get,
+        }
+        super(GetHandler, self).__init__(*args, **kwargs)
+
+    def _get(self, doc):
+        spec = {'_id': ObjectId(doc['value']), 'public': True}
+        subdoc = self.db.docs.find_one(spec)
+        subdoc['sid'] = str(subdoc['_id'])
+        del subdoc['_id']
+        doc['docs'] = [subdoc]
+        data = self._get_data(doc)
+        return data

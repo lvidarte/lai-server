@@ -24,4 +24,6 @@ routes = [
     (r'/user',   web.UserHandler),
 
     (r'/sync',   cli.SyncHandler),
+    (r'/search', cli.SearchHandler),
+    (r'/get',    cli.GetHandler),
 ]
