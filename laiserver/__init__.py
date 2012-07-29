@@ -32,7 +32,6 @@ define("port", 8888)
 define("db_host", "localhost")
 define("db_port", 27017)
 define("db_name", "lai_dev")
-define("db_collection", "server")
 
 define("prv_key", os.path.join(options.home_dir, ".ssh/id_rsa"))
 
