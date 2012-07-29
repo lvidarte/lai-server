@@ -20,10 +20,10 @@ routes = [
     (r'/',       web.HomeHandler),
     (r'/login',  web.LoginHandler),
     (r'/logout', web.LogoutHandler),
-    
     (r'/user',   web.UserHandler),
 
-    (r'/sync',   cli.SyncHandler),
+    (r'/update', cli.UpdateHandler),
+    (r'/commit', cli.CommitHandler),
     (r'/search', cli.SearchHandler),
     (r'/get',    cli.GetHandler),
 ]

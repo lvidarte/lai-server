@@ -77,20 +77,38 @@ class CliHandler(BaseHandler):
         return self.PROC[doc['process']](doc)
 
 
-class SyncHandler(CliHandler):
+class SyncHandler(BaseHandler):
+
+    def _get_update_docs(self, doc):
+        docs  = []
+        query = {'user': doc['user'],
+                 'tid' : {'$gt': doc['last_tid']}}
+        cur = self.db.docs.find(query)
+        for row in cur:
+            row['sid'] = str(row['_id'])
+            del row['_id']
+            docs.append(row)
+        return docs
+
+
+class UpdateHandler(CliHandler, SyncHandler):
 
     def __init__(self, *args, **kwargs):
-        self.PROC = {
-            'update': self._update,
-            'commit': self._commit,
-        }
-        super(SyncHandler, self).__init__(*args, **kwargs)
+        self.PROC = {'update': self._update}
+        super(UpdateHandler, self).__init__(*args, **kwargs)
 
     def _update(self, doc):
         doc['session_id'] = session.create(doc)
         doc['docs'] = self._get_update_docs(doc)
         data = self._get_data(doc)
         return data
+
+
+class CommitHandler(CliHandler, SyncHandler):
+
+    def __init__(self, *args, **kwargs):
+        self.PROC = {'commit': self._commit}
+        super(CommitHandler, self).__init__(*args, **kwargs)
 
     def _commit(self, doc):
         if len(self._get_update_docs(doc)) == 0:
@@ -115,17 +133,6 @@ class SyncHandler(CliHandler):
         update = {'$inc': {'last_tid': 1}}
         row = self.db.users.find_and_modify(query, update, upsert=True, new=True)
         return row['last_tid']
-
-    def _get_update_docs(self, doc):
-        docs  = []
-        query = {'user': doc['user'],
-                 'tid' : {'$gt': doc['last_tid']}}
-        cur = self.db.docs.find(query)
-        for row in cur:
-            row['sid'] = str(row['_id'])
-            del row['_id']
-            docs.append(row)
-        return docs
 
     def _do_commit(self, subdoc, tid, user):
         sdoc = {'tid'   : tid,
