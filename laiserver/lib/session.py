@@ -19,7 +19,7 @@ from time import sleep
 from laiserver.lib import db, ObjectId
 
 
-TTL = 10
+TTL = 120
 
 
 def create(doc):
