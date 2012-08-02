@@ -1,4 +1,32 @@
 {% extends "base.html" %}
 
 {% block content %}
+<h1>Lai</h1>
+
+<h3 style="margin-top:15px">Welcome to lai, a program to manage and sync <em>linux commands, code snippets or any anotation</em> that developers or sys admin need get quickly in theirs console terminals.</h3>
+
+<h3 style="margin-top:15px">Just install the <a href="https://github.com/lvidarte/lai-client">lai client</a>.</h3>
+
+<hr />
+
+<h4 style="margin-bottom:15px">Some examples</h4>
+
+Adding some text
+
+<pre>
+$ lai --add 'some text here'
+</pre>
+
+Searching some text
+
+<pre>
+$ lai here
+1: some text here
+</pre>
+
+Sync with lai-server
+
+<pre>
+$ lai --sync
+</pre>
 {% end %}
