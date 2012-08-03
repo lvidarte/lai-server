@@ -150,9 +150,7 @@ class CommitHandler(CliHandler, SyncHandler):
 class SearchHandler(CliHandler):
 
     def __init__(self, *args, **kwargs):
-        self.PROC = {
-            'search': self._search,
-        }
+        self.PROC = {'search': self._search}
         super(SearchHandler, self).__init__(*args, **kwargs)
 
     def _search(self, doc):
@@ -173,9 +171,7 @@ class SearchHandler(CliHandler):
 class GetHandler(CliHandler):
 
     def __init__(self, *args, **kwargs):
-        self.PROC = {
-            'get': self._get,
-        }
+        self.PROC = {'get': self._get}
         super(GetHandler, self).__init__(*args, **kwargs)
 
     def _get(self, doc):
