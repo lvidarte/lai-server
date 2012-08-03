@@ -1,32 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>Lai</h1>
+    <h1>Lai</h1>
 
-<h3 style="margin-top:15px">Welcome to lai, a program to manage and sync <em>linux commands, code snippets or any anotation</em> that developers or sys admin need get quickly in theirs console terminals.</h3>
+    <h3 style="margin-top:15px">Welcome to lai, a program to manage and sync <em>linux commands, code snippets or any anotation</em> that developers or sys admin need get quickly in theirs console terminals.</h3>
 
-<h3 style="margin-top:15px">Just install the <a href="https://github.com/lvidarte/lai-client">lai client</a>.</h3>
+    <h3 style="margin-top:15px">Download the <a href="https://github.com/lvidarte/lai-client">lai client</a>.</h3>
 
 <hr />
 
-<h4 style="margin-bottom:15px">Some examples</h4>
+<div class="container">
+    <div class="row">
 
-Adding some text
+        <div class="span6">
+            <h2>Client</h2>
 
-<pre>
-$ lai --add 'some text here'
-</pre>
+            <p>Add some text</p>
+            <pre>$ lai --add 'grep -R &lt;pattern&gt; --include \*.txt'</pre>
+            <p>Search some text</p>
+            <pre>$ lai grep
+1: grep -R &lt;pattern&gt; --include \*.txt</pre>
+            <p>Make public the doc</p>
+            <pre>$ lai --set-public 1</pre>
+            <p>Sync with lai-server</p>
+            <pre>$ lai --sync</pre>
+            <p>Search in public docs</p>
+            <pre>$ lai --server-search grep
+5015d7273042976dc5000230: egrep -w 'word1|word2' /path/to/file
+5015d7363042976dc500031b: grep -i ps ~/.bash* | grep -v history</pre>
+            <p>Copy a doc</p>
+            <pre>$ lai --copy 5015d7273042976dc5000230</pre>
 
-Searching some text
+        </div>
 
-<pre>
-$ lai here
-1: some text here
-</pre>
+        <div class="span6">
+            <h2>Server</h2>
 
-Sync with lai-server
+            <p>You can download and set your own <a href="https://github.com/lvidarte/lai-server">lai server</a> or use the public lai server.</p>
 
-<pre>
-$ lai --sync
-</pre>
+            <p>Whatever the chosen server, just <a href="/login">login</a> with your Google account and add a public key with a name to identify it. When configure the client use your email and the pub key name to authenticate against the server.</p>
+        </div>
+
+    </div>
+</div>
+
+<hr />
+
+<p style="text-align:center">lai is <a href="http://www.gnu.org/philosophy/free-sw.html">free software</a>.</p>
 {% end %}
