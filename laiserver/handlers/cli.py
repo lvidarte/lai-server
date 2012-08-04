@@ -35,9 +35,12 @@ class CliHandler(BaseHandler):
         self.write(data)
 
     def _get_doc(self, data):
-        enc = base64.b64decode(data)
-        msg = crypto.decrypt(enc, self.application.prv_key)
-        doc = json.loads(msg)
+        try:
+            enc = base64.b64decode(data)
+            msg = crypto.decrypt(enc, self.application.prv_key)
+            doc = json.loads(msg)
+        except:
+            raise HTTPError(500, "Couldn't decrypt the data")
         return doc
 
     def _get_data(self, doc):
@@ -154,9 +157,11 @@ class SearchHandler(CliHandler):
         super(SearchHandler, self).__init__(*args, **kwargs)
 
     def _search(self, doc):
-        spec = {'public'   : True,
-                'user'     : {'$ne': doc['user']},
-                'data.body': {'$regex': doc['value'], '$options': 'im'}}
+        regex = {'$regex': doc['value'], '$options': 'im'}
+        spec = {'public': True,
+                'user'  : {'$ne': doc['user']},
+                '$or'   : [{'data.content': regex},
+                           {'data.help'   : regex}]}
         cur = self.db.docs.find(spec)
         docs = []
         for row in cur:

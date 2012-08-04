@@ -60,7 +60,7 @@ def decrypt(data, private_key):
     passwd = pkcs1_decryptor.decrypt(passwd_encrypted, ERROR)
 
     if passwd == ERROR:
-        raise Exception('Private key error')
+        raise Exception('Couldn\'t decrypt the passwd')
 
     iv = data.read(16)
     aes_decryptor = AES.new(passwd, AES.MODE_CBC, iv)

@@ -29,9 +29,10 @@ define("debug", True)
 define("addr", '127.0.0.1')
 define("port", 8888)
 
+# Mongo
 define("db_host", "localhost")
 define("db_port", 27017)
-define("db_name", "lai_dev")
+define("db_name", "lai_server")
 
 define("prv_key", os.path.join(options.home_dir, ".ssh/id_rsa"))
 
