@@ -20,7 +20,7 @@ from tornado.options import options
 from tornado.options import define
 
 
-version = '0.1.0'
+version = '0.1.1'
 
 define("base_dir", os.path.realpath(os.path.dirname(__file__)))
 define("home_dir", os.path.expanduser('~'))
