@@ -3,9 +3,9 @@
 {% block content %}
     <h1>Lai</h1>
 
-    <h3 style="margin-top:15px">Welcome to lai, a program to manage and sync <em>linux commands, code snippets or any anotation</em> that developers or sys admin need get quickly in theirs console terminals.</h3>
+    <h3 style="margin-top:15px">Welcome to lai, a command line program to store notes and keep then synchronized between multiple computers. The idea is to keep your commands, shortcuts, snippets and anything you want to have on hand at the console. You can also share notes with others.</h3>
 
-    <h3 style="margin-top:15px">Download the <a href="https://github.com/lvidarte/lai-client">lai client</a>.</h3>
+    <h3 style="margin-top:15px">Download the <a href="https://github.com/lvidarte/lai-client">lai client</a> at github.</h3>
 
 <hr />
 
@@ -15,20 +15,20 @@
         <div class="span6">
             <h2>Client</h2>
 
-            <p>Add some text</p>
-            <pre>$ lai --add 'grep -R &lt;pattern&gt; --include \*.txt'</pre>
-            <p>Search some text</p>
+            <p>Store a note</p>
+            <pre>$ lai --add 'grep -R &lt;pattern&gt; --include \*.txt &lt;dir&gt;'</pre>
+            <p>Search</p>
             <pre>$ lai grep
-1: grep -R &lt;pattern&gt; --include \*.txt</pre>
-            <p>Make public the doc</p>
+1: grep -R &lt;pattern&gt; --include \*.txt &lt;dir&gt;</pre>
+            <p>Share with others</p>
             <pre>$ lai --set-public 1</pre>
-            <p>Sync with lai-server</p>
+            <p>Sync with server</p>
             <pre>$ lai --sync</pre>
-            <p>Search in public docs</p>
+            <p>Search in public notes</p>
             <pre>$ lai --server-search grep
 5015d7273042976dc5000230: egrep -w 'word1|word2' /path/to/file
 5015d7363042976dc500031b: grep -i ps ~/.bash* | grep -v history</pre>
-            <p>Copy a doc</p>
+            <p>Copy from server</p>
             <pre>$ lai --copy 5015d7273042976dc5000230</pre>
 
         </div>
