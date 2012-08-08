@@ -160,8 +160,8 @@ class SearchHandler(CliHandler):
         regex = {'$regex': doc['value'], '$options': 'im'}
         spec = {'public': True,
                 'user'  : {'$ne': doc['user']},
-                '$or'   : [{'data.content': regex},
-                           {'data.help'   : regex}]}
+                '$or'   : [{'data.content'    : regex},
+                           {'data.description': regex}]}
         cur = self.db.docs.find(spec)
         docs = []
         for row in cur:
