@@ -16,20 +16,20 @@
             <h2>Client</h2>
 
             <p>Store a note</p>
-            <pre>$ lai --add 'grep -R &lt;pattern&gt; --include \*.txt &lt;dir&gt;'</pre>
+            <pre>$ lai add 'grep -R &lt;pattern&gt; --include \*.txt &lt;dir&gt;'</pre>
             <p>Search</p>
-            <pre>$ lai grep
+            <pre>$ lai search grep
 1: grep -R &lt;pattern&gt; --include \*.txt &lt;dir&gt;</pre>
             <p>Share with others</p>
-            <pre>$ lai --set-public 1</pre>
+            <pre>$ lai edit 1 --public</pre>
             <p>Sync with server</p>
-            <pre>$ lai --sync</pre>
+            <pre>$ lai sync</pre>
             <p>Search in public notes</p>
-            <pre>$ lai --server-search grep
+            <pre>$ lai search --server grep
 5015d7273042976dc5000230: egrep -w 'word1|word2' /path/to/file
 5015d7363042976dc500031b: grep -i ps ~/.bash* | grep -v history</pre>
             <p>Copy from server</p>
-            <pre>$ lai --copy 5015d7273042976dc5000230</pre>
+            <pre>$ lai copy --server 5015d7273042976dc5000230</pre>
 
         </div>
 
