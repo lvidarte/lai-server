@@ -23,5 +23,5 @@ except ImportError:
     from pymongo.objectid import ObjectId
 
 
-connection = pymongo.Connection(options.db_host, options.db_port)
-db = connection[options.db_name]
+client = pymongo.MongoClient(options.db_host, options.db_port)
+db = client[options.db_name]
