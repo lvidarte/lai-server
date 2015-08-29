@@ -143,11 +143,11 @@ class CommitHandler(CliHandler, SyncHandler):
                 'public': subdoc['public']}
         if subdoc['sid']:
             _id  = ObjectId(subdoc['sid'])
-            self.db.docs.update({'_id': _id}, {'$set': sdoc})
+            self.db.docs.update_one({'_id': _id}, {'$set': sdoc})
         else:
             sdoc['user'] = user
-            _id  = self.db.docs.insert(sdoc, safe=True)
-        return {'id' : subdoc['id'], 'sid': str(_id), 'tid': tid}
+            result  = self.db.docs.insert_one(sdoc)
+        return {'id' : subdoc['id'], 'sid': str(result.inserted_id), 'tid': tid}
 
 
 class SearchHandler(CliHandler):

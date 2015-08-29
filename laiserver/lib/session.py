@@ -26,8 +26,8 @@ def create(doc):
     spec = {'user'   : doc['user'],
             'process': doc['process'],
             'expire' : get_expire_time()}
-    _id = db.sessions.insert(spec)
-    return str(_id)
+    result = db.sessions.insert_one(spec)
+    return str(result.inserted_id)
 
 def get_expire_time():
     expire_time = datetime.now() + timedelta(seconds=TTL)
@@ -39,12 +39,12 @@ def update(doc):
             'user': doc['user']}
     document = {'process': doc['process'],
                 'expire' : get_expire_time()}
-    rs = db.sessions.update(spec, {'$set': document}, safe=True)
-    return rs['n'] == 1
+    result = db.sessions.update_one(spec, {'$set': document})
+    return result.matched_count == 1
 
 def remove_expired():
     spec = {'expire': {'$lt': datetime.now()}}
-    rs = db.sessions.remove(spec, safe=True)
+    rs = db.sessions.delete_one(spec)
     return rs
 
 
