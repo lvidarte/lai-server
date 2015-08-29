@@ -16,17 +16,29 @@
 
 import tornado.auth
 from laiserver.handlers import BaseHandler
+from laiserver import options
 
 
-class LoginHandler(BaseHandler, tornado.auth.GoogleMixin):
-    @tornado.web.asynchronous
+class LoginHandler(BaseHandler, tornado.auth.GoogleOAuth2Mixin):
+    @tornado.gen.coroutine
     def get(self):
-        if self.get_argument('openid.mode', None):
-            self.get_authenticated_user(self.async_callback(self._on_auth))
-            return
-        self.authenticate_redirect()
+        if self.get_argument('code', False):
+            access = yield self.get_authenticated_user(
+                redirect_uri='http://lai.nerdlabs.com.ar/login',
+                code=self.get_argument('code'))
+            user = yield self.oauth2_request(
+                'https://www.googleapis.com/oauth2/v1/userinfo',
+                access_token=access['access_token'])
+            self._on_auth(access, user)
+        else:
+            yield self.authorize_redirect(
+                redirect_uri='http://lai.nerdlabs.com.ar/login',
+                client_id=options.google_client_id,
+                scope=['profile', 'email'],
+                response_type='code',
+                extra_params={'approval_prompt': 'auto'})
 
-    def _on_auth(self, user):
+    def _on_auth(self, access, user):
         if not user:
             raise tornado.web.HTTPError(500, "Google auth failed")
         self.set_secure_cookie('user', user['email'], expires_days=None)

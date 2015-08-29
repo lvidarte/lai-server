@@ -34,6 +34,10 @@ define("db_host", "localhost")
 define("db_port", 27017)
 define("db_name", "lai_server")
 
+# Google auth
+define("google_client_id", "")
+define("google_client_secret", "")
+
 define("prv_key", os.path.join(options.home_dir, ".ssh/id_rsa"))
 
 try:
